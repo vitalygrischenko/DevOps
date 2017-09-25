@@ -1,0 +1,41 @@
+Vagrant.configure("2") do |config|
+config.vm.box = "bertvv/centos72"
+  config.vm.provider "virtualbox" do |vb|
+  vb.gui = true
+  #config.vm.synced_folder "/DevOps", "/vagrant"
+  config.vm.provision "shell", path: "config_all.sh"
+  end
+  
+  # Config tomcat1
+	config.vm.define "server1" do |server1|
+	server1.vm.hostname = "server1"
+	server1.vm.network "private_network", ip: "172.16.0.2"
+	server1.vm.network "forwarded_port", guest: "8080", host: "18082"
+	server1.vm.provision "shell", path: "config_tomcat.sh"
+	server1.vm.provision "shell",
+		inline: "sudo echo '172.16.0.3 server2 server2\n172.16.0.4 server4 server4' >> /etc/hosts"
+	server1.vm.provision "shell",
+		inline: "sudo echo 'Welcome to Tomcat1' > /usr/share/tomcat/webapps/test/index.html"
+	end
+	
+  # Config tomcat2
+	config.vm.define "server2" do |server2|
+	server2.vm.hostname = "server2"
+	server2.vm.network "private_network", ip: "172.16.0.3"
+	server2.vm.network "forwarded_port", guest: "8080", host: "18081"
+	server2.vm.provision "shell", path: "config_tomcat.sh"
+	server2.vm.provision "shell",
+		inline: "sudo echo '172.16.0.2 server1 server1\n172.16.0.4 server4 server4' >> /etc/hosts"
+	server2.vm.provision "shell",
+		inline: "sudo echo 'Welcome to Tomcat2' > /usr/share/tomcat/webapps/test/index.html"
+	end
+  
+  # Config Server - HTTPD
+	config.vm.define "server3" do |server3|
+	server3.vm.hostname = "server3"
+	server3.vm.network "private_network", ip: "172.16.0.4"
+    server3.vm.network "forwarded_port", guest: "80", host: "8009"
+	server3.vm.provision "shell", path: "config_httpd.sh"
+		
+	end
+end

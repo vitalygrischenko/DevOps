@@ -1,0 +1,18 @@
+Vagrant.configure("2") do |config|
+config.vm.box = "centos/7"
+  config.vm.provider "virtualbox" do |vb|
+  vb.gui = true
+  #config.vm.synced_folder "/DevOps", "/vagrant"
+  end
+  
+  # Config Chef server
+	config.vm.define "server1" do |server1|
+	server1.vm.hostname = "server1"
+	server1.vm.network "private_network", ip: "172.16.0.2"
+	server1.vm.network "forwarded_port", guest: "443", host: "443"
+	server1.vm.provision "shell", path: "chef_server.sh"
+		
+	end
+	
+ 
+end
